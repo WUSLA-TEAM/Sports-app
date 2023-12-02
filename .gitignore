@@ -7,6 +7,9 @@ node_modules/
 .expo/
 dist/
 web-build/
+.idea
+yarn.lock
+package-lock.json
 
 # Native
 *.orig.*
