@@ -1,26 +1,36 @@
-import React, { useState } from "react";
-import { AppLoading } from "expo";
-import { useFonts } from "expo-font";
-
-import Home from "./src/Screeens/Home";
+import { StyleSheet, Text, View } from "react-native";
+import React from "react";
+import { NavigationContainer } from "@react-navigation/native";
+import { createNativeStackNavigator } from "@react-navigation/native-stack";
+import Home from "./app/Screens/Home";
+import Team from "./app/Screens/Team";
+import TeamDetails from "./app/Screens/Components/TeamDetails";
 
 const App = () => {
-  const [fontsLoaded] = useFonts({
-    ProductSansBold: require("./assets/fonts/ProductSansBold.ttf"),
-    // Add more fonts if needed
-  });
+  const Stack = createNativeStackNavigator();
 
-  if (!fontsLoaded) {
+  function MainStack() {
     return (
-      <AppLoading
-        startAsync={() => {}}
-        onFinish={() => {}}
-        onError={console.warn} // Optional: Add an error handler
-      />
+      <Stack.Navigator
+        initialRouteName="Home"
+        screenOptions={{
+          headerShown: false,
+        }}
+      >
+        <Stack.Screen name="Home" component={Home} />
+        <Stack.Screen name="Team" component={Team} />
+        <Stack.Screen name="TeamDetails" component={TeamDetails} />
+      </Stack.Navigator>
     );
   }
 
-  return <Home />;
+  return (
+    <NavigationContainer>
+      <MainStack />
+    </NavigationContainer>
+  );
 };
 
 export default App;
+
+const styles = StyleSheet.create({});
