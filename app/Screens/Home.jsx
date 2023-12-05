@@ -65,7 +65,10 @@ const Home = () => {
           >
             <Text style={styles.buttonText}>TEAM</Text>
           </TouchableRipple>
-          <TouchableRipple style={styles.button}>
+          <TouchableRipple
+            style={styles.button}
+            onPress={() => navigation.navigate("Registration")}
+          >
             <Text style={styles.buttonText}>REGISTRATION</Text>
           </TouchableRipple>
           <TouchableRipple style={styles.button}>

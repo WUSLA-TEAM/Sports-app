@@ -21,7 +21,7 @@ const Team = ({ navigation }) => {
   return (
     <View style={styles.container}>
       <View style={styles.topSection}>
-        <Text style={styles.titleTop}>Sports Name</Text>
+        <Text style={styles.titleTop}>Team</Text>
       </View>
       <View style={styles.wrapper}>
         <TouchableRipple
