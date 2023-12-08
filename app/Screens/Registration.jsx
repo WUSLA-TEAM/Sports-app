@@ -1,11 +1,73 @@
-import { StyleSheet, Text, View } from "react-native";
 import React, { useState } from "react";
 import { Button, TextInput } from "react-native-paper";
+import { View, StyleSheet, Text } from "react-native";
+import { setDoc, doc, getDoc } from "firebase/firestore";
+import { db } from "../../firebase";
 
-const Registration = () => {
-  const [team, setTeam] = useState("");
-  const [name, setName] = useState("");
-  const [programm, setProgram] = useState("");
+export default function Registration() {
+  const [teamId, setTeamId] = useState("");
+  const [studentId, setStudentId] = useState("");
+  const [program, setProgram] = useState("");
+  const [error, setError] = useState("");
+
+  const handleRegistration = async () => {
+    console.log("handleRegistration called");
+    try {
+      // Validate input
+
+      // Check if team exists
+      const teamDocRef = doc(db, "teams", teamId);
+      console.log("Getting team doc");
+      console.log(`Getting doc for teamId: ${teamId}`);
+      const teamSnapshot = await getDoc(teamDocRef);
+      console.log("Got team doc");
+
+      if (!teamSnapshot.exists()) {
+        setError("Team does not exist.");
+        console.log(error, "Team error");
+      }
+
+      // Construct student document reference
+      const studentDocRef = getStudentDocumentRef(teamId, studentId);
+
+      // Check if student already exists
+      const studentSnapshot = await getDoc(studentDocRef);
+      if (!studentSnapshot.exists()) {
+        setError("Student not exists.");
+        console.log(error, "error");
+        return;
+      }
+
+      // Create a new document for the student
+      const studentData = {
+        program,
+        teamId, // Add additional student data as needed
+      };
+      console.log("Setting student doc");
+
+      await setDoc(studentDocRef, studentData);
+      console.log("Set student doc");
+
+      // Reset form fields and clear error message
+      setTeamId("");
+      setStudentId("");
+      setProgram("");
+      setError("");
+      console.log("Registration successful!");
+    } catch (error) {
+      console.error("Error during registration:", error);
+      setError(`Error during registration: ${error.code}`);
+    }
+  };
+
+  const getStudentDocumentRef = (teamId, studentId) => {
+    // Choose the appropriate approach based on your data structure
+    // Option 1: Access subcollection within team document
+    return doc(db, "teams", teamId, "students", studentId);
+
+    // Option 2: Access students collection directly
+    // return doc(db, "students", studentId);
+  };
 
   return (
     <View style={styles.container}>
@@ -15,40 +77,39 @@ const Registration = () => {
       <View style={styles.wrapper}>
         <View style={styles.Form}>
           <TextInput
-            label="Email"
-            value={team}
-            onChangeText={(team) => setTeam(team)}
+            label="Team"
+            value={teamId}
+            onChangeText={(teamId) => setTeamId(teamId)}
             style={styles.input}
           />
           <TextInput
-            label="Email"
-            value={name}
-            onChangeText={(name) => setName(name)}
+            label="Name"
+            value={studentId}
+            onChangeText={(studentId) => setStudentId(studentId)}
             style={styles.input}
           />
           <TextInput
-            label="Email"
-            value={programm}
-            onChangeText={(programm) => setProgram(programm)}
+            label="Program"
+            value={program}
+            onChangeText={(program) => setProgram(program)}
             style={styles.input}
           />
           <Button
             icon="check"
             mode="contained"
-            onPress={() => console.log("Pressed")}
+            onPress={handleRegistration}
             textColor="#242424"
             buttonColor="#FFF"
             style={styles.buttonCheck}
           >
             Press me
           </Button>
+          {error && <Text style={{ color: "red" }}>{error}</Text>}
         </View>
       </View>
     </View>
   );
-};
-
-export default Registration;
+}
 
 const styles = StyleSheet.create({
   container: {
