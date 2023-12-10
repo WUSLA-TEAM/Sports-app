@@ -1,14 +1,24 @@
 import React, { useState } from "react";
 import { Button, TextInput } from "react-native-paper";
-import { View, StyleSheet, Text } from "react-native";
+import { View, StyleSheet, Text, Alert } from "react-native";
 import { setDoc, doc, getDoc } from "firebase/firestore";
 import { db } from "../../firebase";
 
 export default function Registration() {
   const [teamId, setTeamId] = useState("");
   const [studentId, setStudentId] = useState("");
-  const [program, setProgram] = useState("");
+  const [newProgram, setNewProgram] = useState(""); // Added this line
   const [error, setError] = useState("");
+  const [programs, setPrograms] = useState([]);
+
+  const addProgram = (newProgram) => {
+    if (programs.length < 3) {
+      setPrograms([...programs, newProgram]);
+      setNewProgram(""); // Clear the newProgram state variable
+    } else {
+      setError("You can only join up to 3 programs.");
+    }
+  };
 
   const handleRegistration = async () => {
     console.log("handleRegistration called");
@@ -40,7 +50,7 @@ export default function Registration() {
 
       // Create a new document for the student
       const studentData = {
-        program,
+        programs, // Changed this line
         teamId, // Add additional student data as needed
       };
       console.log("Setting student doc");
@@ -51,12 +61,15 @@ export default function Registration() {
       // Reset form fields and clear error message
       setTeamId("");
       setStudentId("");
-      setProgram("");
+      setNewProgram(""); // Changed this line
+      setPrograms([]); // Added this line
       setError("");
       console.log("Registration successful!");
+      Alert.alert("Registed Comleted");
     } catch (error) {
       console.error("Error during registration:", error);
       setError(`Error during registration: ${error.code}`);
+      Alert.alert("Registed Error", error);
     }
   };
 
@@ -90,10 +103,20 @@ export default function Registration() {
           />
           <TextInput
             label="Program"
-            value={program}
-            onChangeText={(program) => setProgram(program)}
+            value={newProgram}
+            onChangeText={(newProgram) => setNewProgram(newProgram)}
             style={styles.input}
           />
+          <Button
+            icon="plus"
+            mode="contained"
+            onPress={() => addProgram(newProgram)}
+            textColor="#242424"
+            buttonColor="#FFF"
+            style={styles.buttonAddProgram}
+          >
+            Add Program
+          </Button>
           <Button
             icon="check"
             mode="contained"
@@ -104,7 +127,17 @@ export default function Registration() {
           >
             Press me
           </Button>
-          {error && <Text style={{ color: "red" }}>{error}</Text>}
+          {error && (
+            <Text
+              style={{
+                color: "#FFF",
+                fontSize: 12,
+                fontFamily: "NotoSans_500Medium",
+              }}
+            >
+              {error}
+            </Text>
+          )}
         </View>
       </View>
     </View>

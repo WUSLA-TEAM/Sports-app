@@ -1,5 +1,5 @@
 import { StyleSheet, Text, View, ScrollView } from "react-native";
-import React from "react";
+import React, { useState, useEffect } from "react";
 import { useNavigation } from "@react-navigation/native";
 import { TouchableRipple } from "react-native-paper";
 import {
@@ -13,6 +13,7 @@ import {
   NotoSans_900Black,
   useFonts,
 } from "@expo-google-fonts/noto-sans";
+import { db } from "../../firebase";
 
 const Home = () => {
   const [fontsLoaded, fontError] = useFonts({
@@ -31,6 +32,32 @@ const Home = () => {
     return null;
   }
 
+  const [teamOneData, setTeamOneData] = useState({ name: "", score: 0 });
+  const [teamTwoData, setTeamTwoData] = useState({ name: "", score: 0 });
+
+  useEffect(() => {
+    const fetchTeamData = async () => {
+      const teamOneDoc = await firestore()
+        .collection("scores")
+        .doc("teamOne")
+        .get();
+      const teamTwoDoc = await firestore()
+        .collection("scores")
+        .doc("teamTwo")
+        .get();
+      setTeamOneData({
+        name: teamOneDoc.data().name,
+        score: teamOneDoc.data().score,
+      });
+      setTeamTwoData({
+        name: teamTwoDoc.data().name,
+        score: teamTwoDoc.data().score,
+      });
+    };
+
+    fetchTeamData();
+  }, []);
+
   return (
     <ScrollView style={styles.homepage}>
       <View style={styles.topSection}>
@@ -38,19 +65,19 @@ const Home = () => {
       </View>
       <View style={styles.wrapper}>
         <View style={styles.liveSoreBoc}>
-          <Text style={styles.liveprogram}>Pragramm</Text>
+          <Text style={styles.liveprogram}>Program</Text>
           <View style={styles.soreBox}>
             <View style={styles.Side}>
               <View style={styles.PointBox}>
-                <Text style={styles.pointTextLive}>0</Text>
+                <Text style={styles.pointTextLive}>{teamOneData.name}</Text>
               </View>
-              <Text style={styles.liveTeamPoints}>Team</Text>
+              <Text style={styles.liveTeamPoints}>{teamOneData.score}</Text>
             </View>
             <View style={styles.Side}>
               <View style={styles.PointBox}>
-                <Text style={styles.pointTextLive}>1</Text>
+                <Text style={styles.pointTextLive}>{teamTwoData.name}</Text>
               </View>
-              <Text style={styles.liveTeamPoints}>Team</Text>
+              <Text style={styles.liveTeamPoints}>{teamTwoData.score}</Text>
             </View>
           </View>
         </View>
