@@ -1,5 +1,5 @@
 import { StyleSheet, Text, View, ScrollView } from "react-native";
-import React, { useState, useEffect } from "react";
+import React, { useEffect, useState } from "react";
 import { useNavigation } from "@react-navigation/native";
 import { TouchableRipple } from "react-native-paper";
 import {
@@ -14,6 +14,7 @@ import {
   useFonts,
 } from "@expo-google-fonts/noto-sans";
 import { db } from "../../firebase";
+import { collection, doc, setDoc, onSnapshot } from "firebase/firestore";
 
 const Home = () => {
   const [fontsLoaded, fontError] = useFonts({
@@ -28,86 +29,92 @@ const Home = () => {
   });
   const navigation = useNavigation();
 
-  if (!fontsLoaded && !fontError) {
-    return null;
-  }
+  let content = null;
 
   const [teamOneData, setTeamOneData] = useState({ name: "", score: 0 });
   const [teamTwoData, setTeamTwoData] = useState({ name: "", score: 0 });
 
   useEffect(() => {
-    const fetchTeamData = async () => {
-      const teamOneDoc = await firestore()
-        .collection("scores")
-        .doc("teamOne")
-        .get();
-      const teamTwoDoc = await firestore()
-        .collection("scores")
-        .doc("teamTwo")
-        .get();
-      setTeamOneData({
-        name: teamOneDoc.data().name,
-        score: teamOneDoc.data().score,
-      });
-      setTeamTwoData({
-        name: teamTwoDoc.data().name,
-        score: teamTwoDoc.data().score,
-      });
-    };
+    const teamOneRef = doc(db, "scores", "teamOne");
+    const teamTwoRef = doc(db, "scores", "teamTwo");
 
-    fetchTeamData();
+    const unsubscribeOne = onSnapshot(teamOneRef, (doc) => {
+      setTeamOneData({
+        name: doc.data()?.name || "",
+        score: doc.data()?.score || 0,
+      });
+    });
+
+    const unsubscribeTwo = onSnapshot(teamTwoRef, (doc) => {
+      setTeamTwoData({
+        name: doc.data()?.name || "",
+        score: doc.data()?.score || 0,
+      });
+    });
+
+    return () => {
+      unsubscribeOne();
+      unsubscribeTwo();
+    };
   }, []);
 
-  return (
-    <ScrollView style={styles.homepage}>
-      <View style={styles.topSection}>
-        <Text style={styles.titleTop}>Sports Name</Text>
-      </View>
-      <View style={styles.wrapper}>
-        <View style={styles.liveSoreBoc}>
-          <Text style={styles.liveprogram}>Program</Text>
-          <View style={styles.soreBox}>
-            <View style={styles.Side}>
-              <View style={styles.PointBox}>
-                <Text style={styles.pointTextLive}>{teamOneData.name}</Text>
+  if (fontsLoaded || fontError) {
+    content = (
+      <ScrollView style={styles.homepage}>
+        <View style={styles.topSection}>
+          <Text style={styles.titleTop}>Sports Name</Text>
+        </View>
+        <View style={styles.wrapper}>
+          <View style={styles.liveSoreBoc}>
+            <Text style={styles.liveprogram}>Program</Text>
+            <View style={styles.soreBox}>
+              <View style={styles.Side}>
+                <View style={styles.PointBox}>
+                  <Text style={styles.pointTextLive}>{teamOneData.score}</Text>
+                </View>
+                <Text style={styles.liveTeamPoints}>{teamOneData.name}</Text>
               </View>
-              <Text style={styles.liveTeamPoints}>{teamOneData.score}</Text>
-            </View>
-            <View style={styles.Side}>
-              <View style={styles.PointBox}>
-                <Text style={styles.pointTextLive}>{teamTwoData.name}</Text>
+              <View style={styles.Side}>
+                <View style={styles.PointBox}>
+                  <Text style={styles.pointTextLive}>{teamTwoData.score}</Text>
+                </View>
+                <Text style={styles.liveTeamPoints}>{teamTwoData.name}</Text>
               </View>
-              <Text style={styles.liveTeamPoints}>{teamTwoData.score}</Text>
             </View>
           </View>
+          <View style={styles.upcomingBox}>
+            <Text style={styles.upComing}>Up Coming</Text>
+            <Text style={styles.ProgammComing}>Program</Text>
+          </View>
+          <View style={styles.ButtonToNavigate}>
+            <TouchableRipple
+              style={styles.button}
+              onPress={() => navigation.navigate("Team")}
+            >
+              <Text style={styles.buttonText}>TEAM</Text>
+            </TouchableRipple>
+            <TouchableRipple
+              style={styles.button}
+              onPress={() => navigation.navigate("Registration")}
+            >
+              <Text style={styles.buttonText}>REGISTRATION</Text>
+            </TouchableRipple>
+            <TouchableRipple style={styles.button}>
+              <Text style={styles.buttonText}>POINTS</Text>
+            </TouchableRipple>
+            <TouchableRipple
+              style={styles.button}
+              onPress={() => navigation.navigate("Login")}
+            >
+              <Text style={styles.buttonText}>Team</Text>
+            </TouchableRipple>
+          </View>
         </View>
-        <View style={styles.upcomingBox}>
-          <Text style={styles.upComing}>Up Coming</Text>
-          <Text style={styles.ProgammComing}>PRogramm</Text>
-        </View>
-        <View style={styles.ButtonToNavigarte}>
-          <TouchableRipple
-            style={styles.button}
-            onPress={() => navigation.navigate("Team")}
-          >
-            <Text style={styles.buttonText}>TEAM</Text>
-          </TouchableRipple>
-          <TouchableRipple
-            style={styles.button}
-            onPress={() => navigation.navigate("Registration")}
-          >
-            <Text style={styles.buttonText}>REGISTRATION</Text>
-          </TouchableRipple>
-          <TouchableRipple style={styles.button}>
-            <Text style={styles.buttonText}>POINTS</Text>
-          </TouchableRipple>
-          <TouchableRipple style={styles.button}>
-            <Text style={styles.buttonText}>Team</Text>
-          </TouchableRipple>
-        </View>
-      </View>
-    </ScrollView>
-  );
+      </ScrollView>
+    );
+  }
+
+  return content;
 };
 
 export default Home;
@@ -139,7 +146,7 @@ const styles = StyleSheet.create({
     backgroundColor: "#ff4c29",
     borderRadius: 20,
     display: "flex",
-    justifyContent: "centre",
+    justifyContent: "center",
     alignItems: "center",
     padding: 20,
   },
@@ -193,7 +200,7 @@ const styles = StyleSheet.create({
   upComing: {
     color: "#FFF",
     fontSize: 25,
-    fontFamily: "NotoSans_800ExtraBold", // Corrected fontFamily value
+    fontFamily: "NotoSans_800ExtraBold",
     marginBottom: 10,
   },
   ProgammComing: {
@@ -201,7 +208,7 @@ const styles = StyleSheet.create({
     fontSize: 16,
     fontFamily: "NotoSans_500Medium",
   },
-  ButtonToNavigarte: {
+  ButtonToNavigate: {
     display: "flex",
     justifyContent: "center",
     alignItems: "center",
