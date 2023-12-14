@@ -4,82 +4,95 @@ import { View, StyleSheet, Text, Alert } from "react-native";
 import { setDoc, doc, getDoc } from "firebase/firestore";
 import { db } from "../../firebase";
 
-export default function Registration() {
-  const [teamId, setTeamId] = useState("");
-  const [studentId, setStudentId] = useState("");
-  const [newProgram, setNewProgram] = useState(""); // Added this line
-  const [error, setError] = useState("");
-  const [programs, setPrograms] = useState([]);
+const PROGRAM_TYPES = {
+  TEAM: "teamPrograms",
+  INDIVIDUAL: "individualPrograms",
+};
 
-  const addProgram = (newProgram) => {
-    if (programs.length < 3) {
-      setPrograms([...programs, newProgram]);
-      setNewProgram(""); // Clear the newProgram state variable
+const MAX_PROGRAMS = {
+  [PROGRAM_TYPES.TEAM]: 2,
+  [PROGRAM_TYPES.INDIVIDUAL]: 3,
+};
+
+export default function Registration() {
+  const [formData, setFormData] = useState({
+    teamId: "",
+    studentId: "",
+    teamPrograms: [],
+    individualPrograms: [],
+    newTeamProgram: "",
+    newIndividualProgram: "",
+    error: "",
+  });
+
+  const handleAddProgram = (type, programName) => {
+    const programType = type.charAt(0).toUpperCase() + type.slice(1);
+    if (formData[type].length < MAX_PROGRAMS[type]) {
+      setFormData({
+        ...formData,
+        [type]: [...formData[type], formData[`new${programType}Program`]],
+        [`new${programType}Program`]: "", // This line clears the TextInput
+      });
     } else {
-      setError("You can only join up to 3 programs.");
+      setFormData({
+        ...formData,
+        error: `You can only join up to ${MAX_PROGRAMS[type]} ${type} programs.`,
+      });
+      Alert.alert(
+        "Limit Reached",
+        `You have reached the limit. You can only join up to ${MAX_PROGRAMS[type]} ${type} programs.`
+      );
     }
   };
 
   const handleRegistration = async () => {
-    console.log("handleRegistration called");
     try {
-      // Validate input
-
-      // Check if team exists
-      const teamDocRef = doc(db, "teams", teamId);
-      console.log("Getting team doc");
-      console.log(`Getting doc for teamId: ${teamId}`);
+      const teamDocRef = doc(db, "teams", formData.teamId);
       const teamSnapshot = await getDoc(teamDocRef);
-      console.log("Got team doc");
 
       if (!teamSnapshot.exists()) {
-        setError("Team does not exist.");
-        console.log(error, "Team error");
+        throw new Error("Team does not exist.");
       }
 
-      // Construct student document reference
-      const studentDocRef = getStudentDocumentRef(teamId, studentId);
-
-      // Check if student already exists
+      const studentDocRef = getStudentDocumentRef(
+        formData.teamId,
+        formData.studentId
+      );
       const studentSnapshot = await getDoc(studentDocRef);
+
       if (!studentSnapshot.exists()) {
-        setError("Student not exists.");
-        console.log(error, "error");
-        return;
+        throw new Error("Student not exists.");
       }
 
-      // Create a new document for the student
       const studentData = {
-        programs, // Changed this line
-        teamId, // Add additional student data as needed
+        programs: [...formData.teamPrograms, ...formData.individualPrograms],
+        teamId: formData.teamId,
       };
-      console.log("Setting student doc");
 
       await setDoc(studentDocRef, studentData);
-      console.log("Set student doc");
 
-      // Reset form fields and clear error message
-      setTeamId("");
-      setStudentId("");
-      setNewProgram(""); // Changed this line
-      setPrograms([]); // Added this line
-      setError("");
-      console.log("Registration successful!");
-      Alert.alert("Registed Comleted");
+      setFormData({
+        teamId: "",
+        studentId: "",
+        teamPrograms: [],
+        individualPrograms: [],
+        newTeamProgram: "",
+        newIndividualProgram: "",
+        error: "",
+      });
+
+      Alert.alert("Registration completed.");
     } catch (error) {
-      console.error("Error during registration:", error);
-      setError(`Error during registration: ${error.code}`);
-      Alert.alert("Registed Error", error);
+      setFormData({
+        ...formData,
+        error: `Error during registration: ${error.message}`,
+      });
+      Alert.alert("Registration error", error.message);
     }
   };
 
   const getStudentDocumentRef = (teamId, studentId) => {
-    // Choose the appropriate approach based on your data structure
-    // Option 1: Access subcollection within team document
     return doc(db, "teams", teamId, "students", studentId);
-
-    // Option 2: Access students collection directly
-    // return doc(db, "students", studentId);
   };
 
   return (
@@ -90,54 +103,53 @@ export default function Registration() {
       <View style={styles.wrapper}>
         <View style={styles.Form}>
           <TextInput
-            label="Team"
-            value={teamId}
-            onChangeText={(teamId) => setTeamId(teamId)}
+            label="Team ID"
+            value={formData.teamId}
+            onChangeText={(teamId) => setFormData({ ...formData, teamId })}
             style={styles.input}
           />
           <TextInput
-            label="Name"
-            value={studentId}
-            onChangeText={(studentId) => setStudentId(studentId)}
+            label="Student ID"
+            value={formData.studentId}
+            onChangeText={(studentId) =>
+              setFormData({ ...formData, studentId })
+            }
             style={styles.input}
           />
           <TextInput
-            label="Program"
-            value={newProgram}
-            onChangeText={(newProgram) => setNewProgram(newProgram)}
+            label="New Team Program"
+            value={formData.newTeamProgram}
+            onChangeText={(newTeamProgram) =>
+              setFormData({ ...formData, newTeamProgram })
+            }
             style={styles.input}
           />
           <Button
-            icon="plus"
-            mode="contained"
-            onPress={() => addProgram(newProgram)}
-            textColor="#242424"
-            buttonColor="#FFF"
-            style={styles.buttonAddProgram}
+            onPress={() =>
+              handleAddProgram(PROGRAM_TYPES.TEAM, formData.newTeamProgram)
+            }
           >
-            Add Program
+            Add Team Program
           </Button>
+          <TextInput
+            label="New Individual Program"
+            value={formData.newIndividualProgram}
+            onChangeText={(newIndividualProgram) =>
+              setFormData({ ...formData, newIndividualProgram })
+            }
+            style={styles.input}
+          />
           <Button
-            icon="check"
-            mode="contained"
-            onPress={handleRegistration}
-            textColor="#242424"
-            buttonColor="#FFF"
-            style={styles.buttonCheck}
+            onPress={() =>
+              handleAddProgram(
+                PROGRAM_TYPES.INDIVIDUAL,
+                formData.newIndividualProgram
+              )
+            }
           >
-            Press me
+            Add Individual Program
           </Button>
-          {error && (
-            <Text
-              style={{
-                color: "#FFF",
-                fontSize: 12,
-                fontFamily: "NotoSans_500Medium",
-              }}
-            >
-              {error}
-            </Text>
-          )}
+          <Button onPress={handleRegistration}>Register</Button>
         </View>
       </View>
     </View>
