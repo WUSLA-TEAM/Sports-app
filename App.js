@@ -7,6 +7,7 @@ import Team from "./app/Screens/Team";
 import TeamDetails from "./app/Screens/Components/TeamDetails";
 import Registration from "./app/Screens/Registration";
 import Login from "./app/Screens/Login";
+import { SafeAreaProvider } from "react-native-safe-area-context";
 
 const App = () => {
   const Stack = createNativeStackNavigator();
@@ -29,9 +30,11 @@ const App = () => {
   }
 
   return (
-    <NavigationContainer>
-      <MainStack />
-    </NavigationContainer>
+    <SafeAreaProvider>
+      <NavigationContainer>
+        <MainStack />
+      </NavigationContainer>
+    </SafeAreaProvider>
   );
 };
 
