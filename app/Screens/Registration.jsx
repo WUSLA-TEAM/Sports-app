@@ -1,205 +1,200 @@
-import React, { useState } from "react";
-import { Button, TextInput } from "react-native-paper";
-import { View, StyleSheet, Text, Alert } from "react-native";
-import { setDoc, doc, getDoc } from "firebase/firestore";
-import { db } from "../../firebase";
+import React, { useState, useEffect } from "react";
+import { Alert, View, StyleSheet } from "react-native";
+import {
+  TextInput,
+  List,
+  Provider,
+  Button,
+  Dropdown,
+} from "react-native-paper";
+import { db } from "../../firebase"; // Import your Firestore instance
+import { collection, doc, getDoc } from "firebase/firestore"; // Import specific functions
 
-const PROGRAM_TYPES = {
-  TEAM: "teamPrograms",
-  INDIVIDUAL: "individualPrograms",
-};
+const Registration = () => {
+  const [teamId, setTeamId] = useState("");
+  const [studentId, setStudentId] = useState("");
+  const [groupPrograms, setGroupPrograms] = useState([]); // Holds selected group programs
+  const [individualPrograms, setIndividualPrograms] = useState([]); // Holds selected individual programs
+  const [programList, setProgramList] = useState([]); // List of available programs
+  const [groupProgramInput, setGroupProgramInput] = useState(""); // Custom group program input
 
-const MAX_PROGRAMS = {
-  [PROGRAM_TYPES.TEAM]: 2,
-  [PROGRAM_TYPES.INDIVIDUAL]: 3,
-};
-
-export default function Registration() {
-  const [formData, setFormData] = useState({
-    teamId: "",
-    studentId: "",
-    teamPrograms: [],
-    individualPrograms: [],
-    newTeamProgram: "",
-    newIndividualProgram: "",
-    error: "",
-  });
-
-  const handleAddProgram = (type, programName) => {
-    const programType = type.charAt(0).toUpperCase() + type.slice(1);
-    if (formData[type].length < MAX_PROGRAMS[type]) {
-      setFormData({
-        ...formData,
-        [type]: [...formData[type], formData[`new${programType}Program`]],
-        [`new${programType}Program`]: "", // This line clears the TextInput
-      });
-    } else {
-      setFormData({
-        ...formData,
-        error: `You can only join up to ${MAX_PROGRAMS[type]} ${type} programs.`,
-      });
-      Alert.alert(
-        "Limit Reached",
-        `You have reached the limit. You can only join up to ${MAX_PROGRAMS[type]} ${type} programs.`
-      );
-    }
+  const handlePress1 = () => {
+    // Set initial state for open/closed status (optional)
+    // Your accordion opening/closing logic
   };
 
-  const handleRegistration = async () => {
-    try {
-      const teamDocRef = doc(db, "teams", formData.teamId);
-      const teamSnapshot = await getDoc(teamDocRef);
+  const handlePress2 = () => {
+    // Handle any logic for "Individual" accordion if needed
+  };
 
-      if (!teamSnapshot.exists()) {
-        throw new Error("Team does not exist.");
+  useEffect(() => {
+    const fetchPrograms = async () => {
+      const docRef = collection(db, "programs").doc("programmes"); // Updated document reference
+      const docSnap = await getDoc(docRef);
+
+      if (docSnap.exists()) {
+        const programData = docSnap.data();
+        setGroupPrograms(programData.group || []); // Set group programs or empty array
+        setProgramList(programData.programs); // Set available program list
+        if (programData.individual) {
+          // Check if "individual" field exists
+          setIndividualPrograms(programData.individual); // Set individual program data
+        } else {
+          setIndividualPrograms([]); // Set empty array if field is missing
+          Alert.alert("Information", "No individual programs found."); // Optionally show alert
+        }
+      } else {
+        Alert.alert("Error", "Programs document not found.");
       }
+    };
 
-      const studentDocRef = getStudentDocumentRef(
-        formData.teamId,
-        formData.studentId
+    fetchPrograms();
+  }, []); // Fetch programs only once on initial render
+
+  const handleSubmit = async () => {
+    if (
+      !teamId ||
+      !studentId ||
+      !groupPrograms.length ||
+      !individualPrograms.length
+    ) {
+      Alert.alert(
+        "Error",
+        "Please fill in all required fields and select programs."
       );
-      const studentSnapshot = await getDoc(studentDocRef);
+      return;
+    }
 
-      if (!studentSnapshot.exists()) {
-        throw new Error("Student not exists.");
-      }
+    const docRef = doc(
+      db,
+      `teams/<span class="math-inline">\{teamId\}/students/</span>{studentId}`
+    ); // Use the doc function
 
+    try {
       const studentData = {
-        programs: [...formData.teamPrograms, ...formData.individualPrograms],
-        teamId: formData.teamId,
+        groupPrograms,
+        individualPrograms,
       };
 
-      await setDoc(studentDocRef, studentData);
-
-      setFormData({
-        teamId: "",
-        studentId: "",
-        teamPrograms: [],
-        individualPrograms: [],
-        newTeamProgram: "",
-        newIndividualProgram: "",
-        error: "",
+      await docRef.update({
+        programs: arrayUnion(studentData), // Update selected programs in student data
       });
 
-      Alert.alert("Registration completed.");
+      Alert.alert("Success", "Data uploaded successfully.");
+
+      // Clear form after successful submission (optional)
+      setTeamId("");
+      setStudentId("");
+      setGroupPrograms([]);
+      setIndividualPrograms([]);
+      setGroupProgramInput("");
     } catch (error) {
-      setFormData({
-        ...formData,
-        error: `Error during registration: ${error.message}`,
-      });
-      Alert.alert("Registration error", error.message);
+      Alert.alert("Error", error.message);
     }
   };
 
-  const getStudentDocumentRef = (teamId, studentId) => {
-    return doc(db, "teams", teamId, "students", studentId);
+  const handleGroupProgramSelection = (selectedProgram) => {
+    if (groupPrograms.includes(selectedProgram)) {
+      const updatedGroupPrograms = groupPrograms.filter(
+        (program) => program !== selectedProgram
+      );
+      setGroupPrograms(updatedGroupPrograms);
+    } else {
+      if (groupPrograms.length === 2) {
+        // Handle maximum selected programs
+        Alert.alert("Error", "Cannot select more than two group programs.");
+        return;
+      }
+      setGroupPrograms([...groupPrograms, selectedProgram]);
+    }
   };
 
+  const handleGroupProgramSubmit = () => {
+    if (!groupProgramInput) {
+      Alert.alert("Error", "Please enter a group program.");
+      return;
+    }
+
+    // Implement logic to check if custom group program is valid (against program list or other criteria)
+
+    // Add valid program to groupPrograms state (limited to 2)
+
+    setGroupProgramInput(""); // Clear input
+  };
+dev
   return (
-    <View style={styles.container}>
-      <View style={styles.topSection}>
-        <Text style={styles.titleTop}>Team</Text>
-      </View>
-      <View style={styles.wrapper}>
-        <View style={styles.Form}>
+    <Provider>
+      <View style={styles.container}>
+        <View style={styles.form}>
           <TextInput
-            label="Team ID"
-            value={formData.teamId}
-            onChangeText={(teamId) => setFormData({ ...formData, teamId })}
+            placeholder="Team ID"
+            value={teamId}
+            onChangeText={setTeamId}
             style={styles.input}
           />
           <TextInput
-            label="Student ID"
-            value={formData.studentId}
-            onChangeText={(studentId) =>
-              setFormData({ ...formData, studentId })
-            }
+            placeholder="Student ID"
+            value={studentId}
+            onChangeText={setStudentId}
             style={styles.input}
           />
-          <TextInput
-            label="New Team Program"
-            value={formData.newTeamProgram}
-            onChangeText={(newTeamProgram) =>
-              setFormData({ ...formData, newTeamProgram })
-            }
-            style={styles.input}
-          />
-          <Button
-            onPress={() =>
-              handleAddProgram(PROGRAM_TYPES.TEAM, formData.newTeamProgram)
-            }
-          >
-            Add Team Program
-          </Button>
-          <TextInput
-            label="New Individual Program"
-            value={formData.newIndividualProgram}
-            onChangeText={(newIndividualProgram) =>
-              setFormData({ ...formData, newIndividualProgram })
-            }
-            style={styles.input}
-          />
-          <Button
-            onPress={() =>
-              handleAddProgram(
-                PROGRAM_TYPES.INDIVIDUAL,
-                formData.newIndividualProgram
-              )
-            }
-          >
-            Add Individual Program
-          </Button>
-          <Button onPress={handleRegistration}>Register</Button>
+          {/* Removed Group Accordion since you didn't specify its purpose */}
+          <List.Section>
+            <List.Accordion
+              title="Individual"
+              expanded={false} // Replace with state variable if needed
+              onPress={handlePress2}
+              style={styles.buttonMenu}
+              description="Limited to 3"
+            >
+              {individualPrograms.map((program) => (
+                <List.Item
+                  key={program.id || program.key} // Use appropriate key based on element structure
+                  title={program.title} // Access program title or relevant property
+                  // ... other props and event handlers
+                />
+              ))}
+            </List.Accordion>
+          </List.Section>
+          <Button onPress={handleSubmit}>Submit</Button>
         </View>
       </View>
-    </View>
+    </Provider>
   );
-}
+};
+
+export default Registration;
+
+// your existing styles...
 
 const styles = StyleSheet.create({
   container: {
-    backgroundColor: "#242424",
     flex: 1,
-  },
-  topSection: {
-    height: 161,
-    backgroundColor: "#150050",
-    borderBottomLeftRadius: 51,
-    borderBottomRightRadius: 51,
-    display: "flex",
     justifyContent: "center",
     alignItems: "center",
+    backgroundColor: "#242424",
   },
-  titleTop: {
-    fontSize: 34,
-    color: "#FFF",
-    fontFamily: "NotoSans_700Bold",
-  },
-  wrapper: {
-    padding: 20,
-  },
-  Form: {
-    backgroundColor: "#ff4c29",
+  form: {
+    width: "80%",
     height: 480,
-    display: "flex",
+    borderRadius: 20,
+    backgroundColor: "#ff4c29",
+    padding: 20,
     justifyContent: "center",
     alignItems: "center",
-    borderRadius: 20,
   },
   input: {
     width: 296,
-    borderRadius: 4,
+    height: 54,
+    backgroundColor: "#ECDBBA",
+    marginTop: 10,
+    borderRadius: 5,
     paddingLeft: 10,
-    textAlign: "justify",
-    marginTop: 10,
+    color: "#fff",
+    fontWeight: "900",
   },
-  buttonCheck: {
-    width: 164,
-    height: 53,
-    borderRadius: 8,
-    marginTop: 10,
-    display: "flex",
-    justifyContent: "center",
-    alignItems: "center",
+  buttonMenu: {
+    width: 244,
+    borderRadius: 10,
   },
 });

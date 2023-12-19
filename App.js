@@ -8,6 +8,8 @@ import TeamDetails from "./app/Screens/Components/TeamDetails";
 import Registration from "./app/Screens/Registration";
 import Login from "./app/Screens/Login";
 import { SafeAreaProvider } from "react-native-safe-area-context";
+import "expo-dev-client";
+import Appeal from "./app/Screens/Appeal";
 
 const App = () => {
   const Stack = createNativeStackNavigator();
@@ -25,6 +27,7 @@ const App = () => {
         <Stack.Screen name="TeamDetails" component={TeamDetails} />
         <Stack.Screen name="Registration" component={Registration} />
         <Stack.Screen name="Login" component={Login} />
+        <Stack.Screen name="Appeal" component={Appeal} />
       </Stack.Navigator>
     );
   }

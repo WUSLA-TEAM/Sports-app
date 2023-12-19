@@ -106,7 +106,7 @@ const Home = () => {
               style={styles.button}
               onPress={() => navigation.navigate("Login")}
             >
-              <Text style={styles.buttonText}>blabla</Text>
+              <Text style={styles.buttonText}>Sign</Text>
             </TouchableRipple>
           </View>
         </View>
