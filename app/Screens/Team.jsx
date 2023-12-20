@@ -1,47 +1,42 @@
-import React from "react";
+import React, { useState, useEffect } from "react";
 import { View, Button, StyleSheet, Text } from "react-native";
 import { TouchableRipple } from "react-native-paper";
-import {
-  NotoSans_500Medium,
-  NotoSans_600SemiBold,
-  NotoSans_700Bold,
-  useFonts,
-} from "@expo-google-fonts/noto-sans";
+import { collection, getDocs, query } from "firebase/firestore";
+import { db } from "../../firebase";
 
 const Team = ({ navigation }) => {
-  const [fontsLoaded, fontError] = useFonts({
-    NotoSans_500Medium,
-    NotoSans_600SemiBold,
-    NotoSans_700Bold,
-  });
+  const [teams, setTeams] = useState([]);
 
-  if (!fontsLoaded && !fontError) {
-    return null;
-  }
+  useEffect(() => {
+    const fetchTeams = async () => {
+      const teamsRef = collection(db, "teams");
+      const querySnapshot = await getDocs(query(teamsRef));
+      const teamData = querySnapshot.docs.map((doc) => ({
+        id: doc.id,
+        ...doc.data(),
+      }));
+      setTeams(teamData);
+    };
+    fetchTeams();
+  }, []);
+
   return (
     <View style={styles.container}>
       <View style={styles.topSection}>
-        <Text style={styles.titleTop}>Team</Text>
+        <Text style={styles.titleTop}>Teams</Text>
       </View>
       <View style={styles.wrapper}>
-        <TouchableRipple
-          onPress={() => navigation.navigate("TeamDetails", { teamId: 1 })}
-          style={styles.button}
-        >
-          <Text style={styles.buttonText}>Team 1</Text>
-        </TouchableRipple>
-        <TouchableRipple
-          onPress={() => navigation.navigate("TeamDetails", { teamId: 2 })}
-          style={styles.button}
-        >
-          <Text style={styles.buttonText}>Team 2</Text>
-        </TouchableRipple>
-        <TouchableRipple
-          onPress={() => navigation.navigate("TeamDetails", { teamId: 3 })}
-          style={styles.button}
-        >
-          <Text style={styles.buttonText}>Team 3</Text>
-        </TouchableRipple>
+        {teams.map((team) => (
+          <TouchableRipple
+            key={team.id}
+            onPress={() =>
+              navigation.navigate("TeamDetails", { teamId: team.id })
+            }
+            style={styles.button}
+          >
+            <Text style={styles.buttonText}>{team.id}</Text>
+          </TouchableRipple>
+        ))}
       </View>
     </View>
   );
