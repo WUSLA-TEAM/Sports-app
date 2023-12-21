@@ -201,60 +201,74 @@ const Registration = () => {
   return (
     <Provider>
       <View style={styles.container}>
-        <View style={styles.form}>
-          <TextInput
-            placeholder="Team Name"
-            value={teamName}
-            onChangeText={setTeamName}
-            style={styles.input}
-          />
-          <TextInput
-            placeholder="Student ID"
-            value={studentId}
-            onChangeText={setStudentId}
-            style={styles.input}
-          />
-          <ScrollView style={{ height: 500 }}>
-            <List.Section style={styles.dropdown}>
-              <List.Accordion
-                title="A Categories"
-                id="group-programs-accordion"
-                rippleColor="#150050"
-              >
-                {groupPrograms.map((program) => (
-                  <List.Item
-                    key={program.id}
-                    title={program.id}
-                    left={() => renderCheckIcon(program.id, "group")}
-                    onPress={() => handleSelectProgram(program, "group")}
-                    rippleColor="#242424"
-                  />
-                ))}
-              </List.Accordion>
-            </List.Section>
-          </ScrollView>
-          <ScrollView style={{ height: 500 }}>
-            <List.Section style={styles.dropdown}>
-              <List.Accordion
-                title="B Categories"
-                id="individual-programs-accordion"
-                rippleColor="#150050"
-              >
-                {individualPrograms.map((program) => (
-                  <List.Item
-                    key={program.id}
-                    title={program.id}
-                    left={() => renderCheckIcon(program.id, "individual")}
-                    onPress={() => handleSelectProgram(program, "individual")}
-                    rippleColor="#242424"
-                  />
-                ))}
-              </List.Accordion>
-            </List.Section>
-          </ScrollView>
-          <Button onPress={handleButton} style={styles.buttonsubmit}>
-            Submit
-          </Button>
+        <View style={styles.centeredContent}>
+          <View style={styles.form}>
+            <TextInput
+              placeholder="Team Name"
+              value={teamName}
+              onChangeText={setTeamName}
+              style={styles.input}
+              textColor="#242424"
+            />
+            <TextInput
+              placeholder="Student ID"
+              value={studentId}
+              onChangeText={setStudentId}
+              style={styles.input}
+              textColor="#242424"
+            />
+            <View>
+              <List.Section style={styles.dropdown}>
+                <List.Accordion
+                  title="A Categories"
+                  id="group-programs-accordion"
+                  rippleColor="#150050"
+                >
+                  <ScrollView style={{ height: 300 }}>
+                    {groupPrograms.map((program) => (
+                      <List.Item
+                        key={program.id}
+                        title={program.id}
+                        left={() => renderCheckIcon(program.id, "group")}
+                        onPress={() => handleSelectProgram(program, "group")}
+                        rippleColor="#3102B6"
+                        underlayColor="#242424"
+                        titleStyle={{ color: "#242424", fontWeight: 700 }}
+                      />
+                    ))}
+                  </ScrollView>
+                </List.Accordion>
+              </List.Section>
+
+              <List.Section style={styles.dropdown}>
+                <List.Accordion
+                  title="B Categories"
+                  id="individual-programs-accordion"
+                  rippleColor="#150050"
+                >
+                  <ScrollView style={{ height: 300 }}>
+                    {individualPrograms.map((program) => (
+                      <List.Item
+                        key={program.id}
+                        title={program.id}
+                        left={() => renderCheckIcon(program.id, "individual")}
+                        onPress={() =>
+                          handleSelectProgram(program, "individual")
+                        }
+                        rippleColor="#3102B6"
+                        underlayColor="#242424"
+                        titleStyle={{ color: "#242424", fontWeight: 700 }}
+                      />
+                    ))}
+                  </ScrollView>
+                </List.Accordion>
+              </List.Section>
+
+              <Button onPress={handleButton} style={styles.buttonsubmit}>
+                Submit
+              </Button>
+            </View>
+          </View>
         </View>
       </View>
     </Provider>
@@ -266,19 +280,23 @@ export default Registration;
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    justifyContent: "center",
-    alignItems: "center",
     backgroundColor: "#242424",
   },
+  centeredContent: {
+    flex: 1,
+    justifyContent: "center",
+    alignItems: "center",
+    paddingVertical: 100,
+  },
   form: {
-    width: "80%",
-    height: "70%",
+    width: 374,
+    height: 700,
     borderRadius: 20,
     backgroundColor: "#150050",
     padding: 30,
+    display: "flex",
     justifyContent: "center",
     alignItems: "center",
-    display: "flex",
   },
   input: {
     width: 296,
