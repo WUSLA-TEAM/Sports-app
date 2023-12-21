@@ -95,7 +95,7 @@ const Home = () => {
             </TouchableRipple>
             <TouchableRipple
               style={styles.button}
-              onPress={() => navigation.navigate("Registration")}
+              onPress={() => navigation.navigate("Login")}
             >
               <Text style={styles.buttonText}>REGISTRATION</Text>
             </TouchableRipple>

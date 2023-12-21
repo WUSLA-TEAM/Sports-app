@@ -16,12 +16,13 @@ import {
   updateDoc,
   query,
   where,
+  setDoc,
 } from "firebase/firestore";
 import { useEffect, useState } from "react";
 import { db } from "../../firebase";
 
 const Registration = () => {
-  const [teamName, setTeamName] = useState(""); // Change to teamName
+  const [teamName, setTeamName] = useState("");
   const [studentId, setStudentId] = useState("");
   const [groupPrograms, setGroupPrograms] = useState([]);
   const [selectedGroupPrograms, setSelectedGroupPrograms] = useState([]);
@@ -33,7 +34,6 @@ const Registration = () => {
   useEffect(() => {
     const fetchPrograms = async () => {
       try {
-        // Fetch group programs first
         const groupSnapshot = await getDocs(
           collection(db, "programs", "programmes", "Acategories")
         );
@@ -41,10 +41,8 @@ const Registration = () => {
           id: doc.id,
           ...doc.data(),
         }));
-        console.log("Fetched group programs:", fetchedGroupPrograms);
         setGroupPrograms(fetchedGroupPrograms);
 
-        // Then fetch individual programs
         const individualSnapshot = await getDocs(
           collection(db, "programs", "programmes", "Bcategories")
         );
@@ -54,7 +52,6 @@ const Registration = () => {
             ...doc.data(),
           })
         );
-        console.log("Fetched individual programs:", fetchedIndividualPrograms);
         setIndividualPrograms(fetchedIndividualPrograms);
       } catch (error) {
         console.error("Error fetching programs:", error);
@@ -70,7 +67,7 @@ const Registration = () => {
       programType === "group"
         ? selectedGroupPrograms
         : selectedIndividualPrograms;
-    const limit = programType === "group" ? 3 : 2; // Change limits
+    const limit = programType === "group" ? 3 : 2;
 
     if (selectedPrograms.length < limit) {
       const updatedPrograms = selectedPrograms.includes(program.id)
@@ -104,9 +101,8 @@ const Registration = () => {
 
   const handleSubmit = async () => {
     try {
-      // Check if the team exists
       const teamsRef = collection(db, "teams");
-      const teamsQuery = query(teamsRef, where("name", "==", teamName)); // Change to teamName
+      const teamsQuery = query(teamsRef, where("name", "==", teamName));
       const teamsSnapshot = await getDocs(teamsQuery);
 
       if (teamsSnapshot.empty) {
@@ -114,11 +110,9 @@ const Registration = () => {
         return;
       }
 
-      // Assuming teamName is unique, take the first document from the query result
       const teamDoc = teamsSnapshot.docs[0];
       const teamId = teamDoc.id;
 
-      // Check if the student exists in the team
       const studentRef = doc(db, "teams", teamId, "students", studentId);
       const studentDoc = await getDoc(studentRef);
 
@@ -127,7 +121,6 @@ const Registration = () => {
         return;
       }
 
-      // Add selected programs to the student's document
       const programsToAdd = [
         ...selectedGroupPrograms.map((programId) => ({
           id: programId,
@@ -139,14 +132,10 @@ const Registration = () => {
         })),
       ];
 
-      // Update the student document with the selected programs
       await updateDoc(studentRef, {
         programs: programsToAdd,
       });
 
-      // Additional logic for your submission process if needed
-
-      // Your existing logic for successful submission
       console.log("Submission successful!");
       setTeamName("");
       setStudentId("");
@@ -159,14 +148,64 @@ const Registration = () => {
     }
   };
 
+  const handleUpdatePrograms = async () => {
+    try {
+      const teamsRef = collection(db, "teams");
+      const teamsQuery = query(teamsRef, where("name", "==", teamName));
+      const teamsSnapshot = await getDocs(teamsQuery);
+
+      if (teamsSnapshot.empty) {
+        Alert.alert("Error", "Team does not exist.");
+        return;
+      }
+
+      const teamDoc = teamsSnapshot.docs[0];
+      const teamId = teamDoc.id;
+
+      const addPrograms = async (category, programIds) => {
+        for (const programId of programIds) {
+          const programRef = doc(
+            db,
+            "programs",
+            "programmes",
+            category,
+            programId,
+            teamId,
+            studentId
+          );
+
+          await setDoc(programRef, {
+            field: "value",
+            teamName: teamName,
+            studentName: studentId,
+          });
+        }
+      };
+
+      await addPrograms("Acategories", selectedGroupPrograms);
+      await addPrograms("Bcategories", selectedIndividualPrograms);
+
+      console.log("Programs added successfully!");
+      Alert.alert("Programs added successfully!");
+    } catch (error) {
+      console.error("Error adding program documents:", error);
+      Alert.alert("Error", "Failed to add programs.");
+    }
+  };
+
+  const handleButton = () => {
+    handleUpdatePrograms();
+    handleSubmit();
+  };
+
   return (
     <Provider>
       <View style={styles.container}>
         <View style={styles.form}>
           <TextInput
-            placeholder="Team Name" // Change to Team Name
-            value={teamName} // Change to teamName
-            onChangeText={setTeamName} // Change to setTeamName
+            placeholder="Team Name"
+            value={teamName}
+            onChangeText={setTeamName}
             style={styles.input}
           />
           <TextInput
@@ -176,7 +215,6 @@ const Registration = () => {
             style={styles.input}
           />
           <ScrollView style={{ height: 500 }}>
-            {/* Add ScrollView for Group Programs */}
             <List.Section style={styles.dropdown}>
               <List.Accordion
                 title="A Categories"
@@ -196,7 +234,6 @@ const Registration = () => {
             </List.Section>
           </ScrollView>
           <ScrollView style={{ height: 500 }}>
-            {/* Add ScrollView for Individual Programs */}
             <List.Section style={styles.dropdown}>
               <List.Accordion
                 title="B Categories"
@@ -215,7 +252,7 @@ const Registration = () => {
               </List.Accordion>
             </List.Section>
           </ScrollView>
-          <Button onPress={handleSubmit} style={styles.buttonsubmit}>
+          <Button onPress={handleButton} style={styles.buttonsubmit}>
             Submit
           </Button>
         </View>
