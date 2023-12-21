@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from "react";
-import { View, Text, StyleSheet, SafeAreaView } from "react-native";
+import { View, Text, StyleSheet, SafeAreaView, ScrollView } from "react-native";
 import { collection, getDocs } from "firebase/firestore";
 import { db } from "../../../firebase";
 import { SafeAreaProvider } from "react-native-safe-area-context";
@@ -26,10 +26,9 @@ const TeamDetails = ({ route }) => {
 
   return (
     <SafeAreaProvider>
-      <View style={styles.container}>
+      <ScrollView style={styles.container}>
         <View style={styles.wrapper}>
           <View style={styles.content}>
-            <Text style={styles.subtitle}>Student IDs:</Text>
             {students &&
               students.map((studentId, index) => (
                 <Text key={index} style={styles.text}>
@@ -38,7 +37,7 @@ const TeamDetails = ({ route }) => {
               ))}
           </View>
         </View>
-      </View>
+      </ScrollView>
     </SafeAreaProvider>
   );
 };

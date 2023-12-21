@@ -1,134 +1,172 @@
-import React, { useState, useEffect } from "react";
-import { Alert, View, StyleSheet } from "react-native";
 import {
-  TextInput,
-  List,
-  Provider,
   Button,
-  Dropdown,
+  Menu,
+  Provider,
+  TextInput,
+  Checkbox,
+  List,
+  Text,
 } from "react-native-paper";
-import { db } from "../../firebase"; // Import your Firestore instance
-import { collection, doc, getDoc } from "firebase/firestore"; // Import specific functions
+import { Alert, ScrollView, StyleSheet, View } from "react-native";
+import {
+  collection,
+  doc,
+  getDoc,
+  getDocs,
+  updateDoc,
+  query,
+  where,
+} from "firebase/firestore";
+import { useEffect, useState } from "react";
+import { db } from "../../firebase";
 
 const Registration = () => {
-  const [teamId, setTeamId] = useState("");
+  const [teamName, setTeamName] = useState(""); // Change to teamName
   const [studentId, setStudentId] = useState("");
-  const [groupPrograms, setGroupPrograms] = useState([]); // Holds selected group programs
-  const [individualPrograms, setIndividualPrograms] = useState([]); // Holds selected individual programs
-  const [programList, setProgramList] = useState([]); // List of available programs
-  const [groupProgramInput, setGroupProgramInput] = useState(""); // Custom group program input
-
-  const handlePress1 = () => {
-    // Set initial state for open/closed status (optional)
-    // Your accordion opening/closing logic
-  };
-
-  const handlePress2 = () => {
-    // Handle any logic for "Individual" accordion if needed
-  };
+  const [groupPrograms, setGroupPrograms] = useState([]);
+  const [selectedGroupPrograms, setSelectedGroupPrograms] = useState([]);
+  const [individualPrograms, setIndividualPrograms] = useState([]);
+  const [selectedIndividualPrograms, setSelectedIndividualPrograms] = useState(
+    []
+  );
 
   useEffect(() => {
     const fetchPrograms = async () => {
-      const docRef = collection(db, "programs").doc("programmes"); // Updated document reference
-      const docSnap = await getDoc(docRef);
+      try {
+        // Fetch group programs first
+        const groupSnapshot = await getDocs(
+          collection(db, "programs", "programmes", "Acategories")
+        );
+        const fetchedGroupPrograms = groupSnapshot.docs.map((doc) => ({
+          id: doc.id,
+          ...doc.data(),
+        }));
+        console.log("Fetched group programs:", fetchedGroupPrograms);
+        setGroupPrograms(fetchedGroupPrograms);
 
-      if (docSnap.exists()) {
-        const programData = docSnap.data();
-        setGroupPrograms(programData.group || []); // Set group programs or empty array
-        setProgramList(programData.programs); // Set available program list
-        if (programData.individual) {
-          // Check if "individual" field exists
-          setIndividualPrograms(programData.individual); // Set individual program data
-        } else {
-          setIndividualPrograms([]); // Set empty array if field is missing
-          Alert.alert("Information", "No individual programs found."); // Optionally show alert
-        }
-      } else {
-        Alert.alert("Error", "Programs document not found.");
+        // Then fetch individual programs
+        const individualSnapshot = await getDocs(
+          collection(db, "programs", "programmes", "Bcategories")
+        );
+        const fetchedIndividualPrograms = individualSnapshot.docs.map(
+          (doc) => ({
+            id: doc.id,
+            ...doc.data(),
+          })
+        );
+        console.log("Fetched individual programs:", fetchedIndividualPrograms);
+        setIndividualPrograms(fetchedIndividualPrograms);
+      } catch (error) {
+        console.error("Error fetching programs:", error);
+        Alert.alert("Error", "Failed to fetch programs.");
       }
     };
 
     fetchPrograms();
-  }, []); // Fetch programs only once on initial render
+  }, []);
+
+  const handleSelectProgram = (program, programType) => {
+    const selectedPrograms =
+      programType === "group"
+        ? selectedGroupPrograms
+        : selectedIndividualPrograms;
+    const limit = programType === "group" ? 3 : 2; // Change limits
+
+    if (selectedPrograms.length < limit) {
+      const updatedPrograms = selectedPrograms.includes(program.id)
+        ? selectedPrograms.filter((selected) => selected !== program.id)
+        : [...selectedPrograms, program.id];
+
+      programType === "group"
+        ? setSelectedGroupPrograms(updatedPrograms)
+        : setSelectedIndividualPrograms(updatedPrograms);
+    } else {
+      Alert.alert("Limit Reached", `You can select up to ${limit} programs.`);
+    }
+  };
+
+  const renderCheckIcon = (programId, programType) => {
+    return (
+      <Checkbox
+        status={
+          programType === "group"
+            ? selectedGroupPrograms.includes(programId)
+              ? "checked"
+              : "unchecked"
+            : selectedIndividualPrograms.includes(programId)
+            ? "checked"
+            : "unchecked"
+        }
+        onPress={() => {}}
+      />
+    );
+  };
 
   const handleSubmit = async () => {
-    if (
-      !teamId ||
-      !studentId ||
-      !groupPrograms.length ||
-      !individualPrograms.length
-    ) {
-      Alert.alert(
-        "Error",
-        "Please fill in all required fields and select programs."
-      );
-      return;
-    }
-
-    const docRef = doc(
-      db,
-      `teams/<span class="math-inline">\{teamId\}/students/</span>{studentId}`
-    ); // Use the doc function
-
     try {
-      const studentData = {
-        groupPrograms,
-        individualPrograms,
-      };
+      // Check if the team exists
+      const teamsRef = collection(db, "teams");
+      const teamsQuery = query(teamsRef, where("name", "==", teamName)); // Change to teamName
+      const teamsSnapshot = await getDocs(teamsQuery);
 
-      await docRef.update({
-        programs: arrayUnion(studentData), // Update selected programs in student data
-      });
-
-      Alert.alert("Success", "Data uploaded successfully.");
-
-      // Clear form after successful submission (optional)
-      setTeamId("");
-      setStudentId("");
-      setGroupPrograms([]);
-      setIndividualPrograms([]);
-      setGroupProgramInput("");
-    } catch (error) {
-      Alert.alert("Error", error.message);
-    }
-  };
-
-  const handleGroupProgramSelection = (selectedProgram) => {
-    if (groupPrograms.includes(selectedProgram)) {
-      const updatedGroupPrograms = groupPrograms.filter(
-        (program) => program !== selectedProgram
-      );
-      setGroupPrograms(updatedGroupPrograms);
-    } else {
-      if (groupPrograms.length === 2) {
-        // Handle maximum selected programs
-        Alert.alert("Error", "Cannot select more than two group programs.");
+      if (teamsSnapshot.empty) {
+        Alert.alert("Error", "Team does not exist.");
         return;
       }
-      setGroupPrograms([...groupPrograms, selectedProgram]);
+
+      // Assuming teamName is unique, take the first document from the query result
+      const teamDoc = teamsSnapshot.docs[0];
+      const teamId = teamDoc.id;
+
+      // Check if the student exists in the team
+      const studentRef = doc(db, "teams", teamId, "students", studentId);
+      const studentDoc = await getDoc(studentRef);
+
+      if (!studentDoc.exists()) {
+        Alert.alert("Error", "Student does not exist in the team.");
+        return;
+      }
+
+      // Add selected programs to the student's document
+      const programsToAdd = [
+        ...selectedGroupPrograms.map((programId) => ({
+          id: programId,
+          type: "group",
+        })),
+        ...selectedIndividualPrograms.map((programId) => ({
+          id: programId,
+          type: "individual",
+        })),
+      ];
+
+      // Update the student document with the selected programs
+      await updateDoc(studentRef, {
+        programs: programsToAdd,
+      });
+
+      // Additional logic for your submission process if needed
+
+      // Your existing logic for successful submission
+      console.log("Submission successful!");
+      setTeamName("");
+      setStudentId("");
+      setSelectedGroupPrograms([]);
+      setSelectedIndividualPrograms([]);
+      Alert.alert("Submission successful!");
+    } catch (error) {
+      console.error("Error during submission:", error);
+      Alert.alert("Error", "Failed to submit.");
     }
   };
 
-  const handleGroupProgramSubmit = () => {
-    if (!groupProgramInput) {
-      Alert.alert("Error", "Please enter a group program.");
-      return;
-    }
-
-    // Implement logic to check if custom group program is valid (against program list or other criteria)
-
-    // Add valid program to groupPrograms state (limited to 2)
-
-    setGroupProgramInput(""); // Clear input
-  };
   return (
     <Provider>
       <View style={styles.container}>
         <View style={styles.form}>
           <TextInput
-            placeholder="Team ID"
-            value={teamId}
-            onChangeText={setTeamId}
+            placeholder="Team Name" // Change to Team Name
+            value={teamName} // Change to teamName
+            onChangeText={setTeamName} // Change to setTeamName
             style={styles.input}
           />
           <TextInput
@@ -137,25 +175,49 @@ const Registration = () => {
             onChangeText={setStudentId}
             style={styles.input}
           />
-          {/* Removed Group Accordion since you didn't specify its purpose */}
-          <List.Section>
-            <List.Accordion
-              title="Individual"
-              expanded={false} // Replace with state variable if needed
-              onPress={handlePress2}
-              style={styles.buttonMenu}
-              description="Limited to 3"
-            >
-              {individualPrograms.map((program) => (
-                <List.Item
-                  key={program.id || program.key} // Use appropriate key based on element structure
-                  title={program.title} // Access program title or relevant property
-                  // ... other props and event handlers
-                />
-              ))}
-            </List.Accordion>
-          </List.Section>
-          <Button onPress={handleSubmit}>Submit</Button>
+          <ScrollView style={{ height: 500 }}>
+            {/* Add ScrollView for Group Programs */}
+            <List.Section style={styles.dropdown}>
+              <List.Accordion
+                title="A Categories"
+                id="group-programs-accordion"
+                rippleColor="#150050"
+              >
+                {groupPrograms.map((program) => (
+                  <List.Item
+                    key={program.id}
+                    title={program.id}
+                    left={() => renderCheckIcon(program.id, "group")}
+                    onPress={() => handleSelectProgram(program, "group")}
+                    rippleColor="#242424"
+                  />
+                ))}
+              </List.Accordion>
+            </List.Section>
+          </ScrollView>
+          <ScrollView style={{ height: 500 }}>
+            {/* Add ScrollView for Individual Programs */}
+            <List.Section style={styles.dropdown}>
+              <List.Accordion
+                title="B Categories"
+                id="individual-programs-accordion"
+                rippleColor="#150050"
+              >
+                {individualPrograms.map((program) => (
+                  <List.Item
+                    key={program.id}
+                    title={program.id}
+                    left={() => renderCheckIcon(program.id, "individual")}
+                    onPress={() => handleSelectProgram(program, "individual")}
+                    rippleColor="#242424"
+                  />
+                ))}
+              </List.Accordion>
+            </List.Section>
+          </ScrollView>
+          <Button onPress={handleSubmit} style={styles.buttonsubmit}>
+            Submit
+          </Button>
         </View>
       </View>
     </Provider>
@@ -163,8 +225,6 @@ const Registration = () => {
 };
 
 export default Registration;
-
-// your existing styles...
 
 const styles = StyleSheet.create({
   container: {
@@ -175,12 +235,13 @@ const styles = StyleSheet.create({
   },
   form: {
     width: "80%",
-    height: 480,
+    height: "70%",
     borderRadius: 20,
-    backgroundColor: "#ff4c29",
-    padding: 20,
+    backgroundColor: "#150050",
+    padding: 30,
     justifyContent: "center",
     alignItems: "center",
+    display: "flex",
   },
   input: {
     width: 296,
@@ -192,8 +253,18 @@ const styles = StyleSheet.create({
     color: "#fff",
     fontWeight: "900",
   },
-  buttonMenu: {
-    width: 244,
-    borderRadius: 10,
+  buttonsubmit: {
+    height: 50,
+    width: 100,
+    backgroundColor: "#FFF",
+    display: "flex",
+    justifyContent: "center",
+    alignItems: "center",
+    borderRadius: 8,
+  },
+  dropdown: {
+    width: 296,
+    backgroundColor: "#ECDBBA",
+    borderRadius: 8,
   },
 });

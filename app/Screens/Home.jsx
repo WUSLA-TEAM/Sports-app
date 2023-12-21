@@ -104,7 +104,7 @@ const Home = () => {
             </TouchableRipple>
             <TouchableRipple
               style={styles.button}
-              onPress={() => navigation.navigate("Login")}
+              onPress={() => navigation.navigate("")}
             >
               <Text style={styles.buttonText}>Sign</Text>
             </TouchableRipple>
@@ -143,7 +143,7 @@ const styles = StyleSheet.create({
   },
   liveSoreBoc: {
     height: 235,
-    backgroundColor: "#ff4c29",
+    backgroundColor: "#39306c",
     borderRadius: 20,
     display: "flex",
     justifyContent: "center",
@@ -216,7 +216,7 @@ const styles = StyleSheet.create({
   button: {
     width: 357,
     height: 64,
-    backgroundColor: "#579bb1",
+    backgroundColor: "#496fa8",
     borderRadius: 10,
     display: "flex",
     justifyContent: "center",

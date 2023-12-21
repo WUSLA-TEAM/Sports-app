@@ -24,6 +24,7 @@ const Login = () => {
         password
       );
       console.log("User logged in: ", userCredential.user);
+      navigation.navigate("Registration");
     } catch (error) {
       console.error("Error logging in: ", error);
     }

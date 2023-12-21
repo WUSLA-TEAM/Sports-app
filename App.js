@@ -6,6 +6,7 @@ import Home from "./app/Screens/Home";
 import Team from "./app/Screens/Team";
 import TeamDetails from "./app/Screens/Components/TeamDetails";
 import Registration from "./app/Screens/Registration";
+import Login from "./app/Screens/Login";
 
 const App = () => {
   const Stack = createNativeStackNavigator();
@@ -22,6 +23,7 @@ const App = () => {
         <Stack.Screen name="Team" component={Team} />
         <Stack.Screen name="TeamDetails" component={TeamDetails} />
         <Stack.Screen name="Registration" component={Registration} />
+        <Stack.Screen name="Login" component={Login} />
       </Stack.Navigator>
     );
   }

@@ -13,7 +13,7 @@ const Team = ({ navigation }) => {
       const querySnapshot = await getDocs(query(teamsRef));
       const teamData = querySnapshot.docs.map((doc) => ({
         id: doc.id,
-        ...doc.data(),
+        name: doc.data().name, // Access the 'name' field from the document data
       }));
       setTeams(teamData);
     };
@@ -34,7 +34,8 @@ const Team = ({ navigation }) => {
             }
             style={styles.button}
           >
-            <Text style={styles.buttonText}>{team.id}</Text>
+            <Text style={styles.buttonText}>{team.name}</Text>
+            {/* Display team name */}
           </TouchableRipple>
         ))}
       </View>
@@ -66,7 +67,7 @@ const styles = StyleSheet.create({
   },
   button: {
     height: 81,
-    backgroundColor: "#ff4c29",
+    backgroundColor: "#496fa8",
     borderRadius: 20,
     marginTop: 20,
     display: "flex",
