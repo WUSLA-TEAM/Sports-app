@@ -1,5 +1,5 @@
-import { StyleSheet, Text, View, ScrollView } from "react-native";
 import React, { useEffect, useState } from "react";
+import { View, Text, StyleSheet, ScrollView } from "react-native";
 import { useNavigation } from "@react-navigation/native";
 import { TouchableRipple } from "react-native-paper";
 import {
@@ -33,10 +33,12 @@ const Home = () => {
 
   const [teamOneData, setTeamOneData] = useState({ name: "", score: 0 });
   const [teamTwoData, setTeamTwoData] = useState({ name: "", score: 0 });
+  const [teamThreeData, setTeamThreeData] = useState({ name: "", score: 0 });
 
   useEffect(() => {
     const teamOneRef = doc(db, "scores", "teamOne");
     const teamTwoRef = doc(db, "scores", "teamTwo");
+    const teamThreeRef = doc(db, "scores", "teamThree");
 
     const unsubscribeOne = onSnapshot(teamOneRef, (doc) => {
       setTeamOneData({
@@ -52,9 +54,17 @@ const Home = () => {
       });
     });
 
+    const unsubscribeThree = onSnapshot(teamThreeRef, (doc) => {
+      setTeamThreeData({
+        name: doc.data()?.name || "",
+        score: doc.data()?.score || 0,
+      });
+    });
+
     return () => {
       unsubscribeOne();
       unsubscribeTwo();
+      unsubscribeThree();
     };
   }, []);
 
@@ -65,8 +75,8 @@ const Home = () => {
           <Text style={styles.titleTop}>Sports Name</Text>
         </View>
         <View style={styles.wrapper}>
-          <View style={styles.liveSoreBoc}>
-            <Text style={styles.liveprogram}>Program</Text>
+          <ScrollView style={styles.liveSoreBoc}>
+            <Text style={styles.liveprogram}>Total Scores</Text>
             <View style={styles.soreBox}>
               <View style={styles.Side}>
                 <View style={styles.PointBox}>
@@ -80,12 +90,22 @@ const Home = () => {
                 </View>
                 <Text style={styles.liveTeamPoints}>{teamTwoData.name}</Text>
               </View>
+              <View style={styles.Side}>
+                <View style={styles.PointBox}>
+                  <Text style={styles.pointTextLive}>
+                    {teamThreeData.score}
+                  </Text>
+                </View>
+                <Text style={styles.liveTeamPoints}>{teamThreeData.name}</Text>
+              </View>
             </View>
-          </View>
-          <View style={styles.upcomingBox}>
-            <Text style={styles.upComing}>Up Coming</Text>
-            <Text style={styles.ProgammComing}>Program</Text>
-          </View>
+          </ScrollView>
+          <TouchableRipple onPress={() => navigation.navigate("Schedule")}>
+            <View style={styles.upcomingBox}>
+              <Text style={styles.upComing}>Up Coming</Text>
+              <Text style={styles.ProgammComing}>Program</Text>
+            </View>
+          </TouchableRipple>
           <View style={styles.ButtonToNavigate}>
             <TouchableRipple
               style={styles.button}
@@ -99,15 +119,18 @@ const Home = () => {
             >
               <Text style={styles.buttonText}>REGISTRATION</Text>
             </TouchableRipple>
-            <TouchableRipple style={styles.button}>
+            <TouchableRipple
+              style={styles.button}
+              onPress={() => navigation.navigate("Points")}
+            >
               <Text style={styles.buttonText}>POINTS</Text>
             </TouchableRipple>
-            <TouchableRipple
+            {/* <TouchableRipple
               style={styles.button}
               onPress={() => navigation.navigate("")}
             >
               <Text style={styles.buttonText}>Sign</Text>
-            </TouchableRipple>
+            </TouchableRipple> */}
           </View>
         </View>
       </ScrollView>
@@ -145,39 +168,40 @@ const styles = StyleSheet.create({
     height: 235,
     backgroundColor: "#39306c",
     borderRadius: 20,
-    display: "flex",
-    justifyContent: "center",
-    alignItems: "center",
-    padding: 20,
+    // display: "flex",
+    // justifyContent: "center",
+    // alignItems: "center",
+    padding: 10,
   },
   liveprogram: {
-    fontSize: 12,
+    fontSize: 20,
     fontFamily: "NotoSans_500Medium",
     color: "#FFF",
+    textAlign: "center",
   },
   soreBox: {
-    display: "flex",
-    alignItems: "center",
-    justifyContent: "space-between",
-    flexDirection: "row",
+    // display: "flex",
+    // alignItems: "center",
+    // width: 500,
   },
   Side: {
     display: "flex",
-    justifyContent: "center",
+    justifyContent: "space-around",
     alignItems: "center",
-    width: "50%",
+    flexDirection: "row",
+    marginBottom: 10,
   },
   PointBox: {
-    height: 114,
-    width: 114,
-    borderRadius: 19,
+    height: 50,
+    width: 50,
+    borderRadius: 8,
     backgroundColor: "#f4f7f7",
     display: "flex",
     justifyContent: "center",
     alignItems: "center",
   },
   pointTextLive: {
-    fontSize: 40,
+    fontSize: 20,
     fontFamily: "NotoSans_900Black",
     color: "#872341",
   },

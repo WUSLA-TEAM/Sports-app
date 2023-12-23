@@ -67,7 +67,7 @@ const Registration = () => {
       programType === "group"
         ? selectedGroupPrograms
         : selectedIndividualPrograms;
-    const limit = programType === "group" ? 3 : 2;
+    const limit = programType === "group" ? 100 : 200;
 
     if (selectedPrograms.length < limit) {
       const updatedPrograms = selectedPrograms.includes(program.id)
