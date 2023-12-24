@@ -81,7 +81,7 @@ const Home = () => {
     content = (
       <ScrollView style={styles.homepage}>
         <View style={styles.topSection}>
-          <Text style={styles.titleTop}>{name}</Text>
+          <Text style={styles.titleTop}>{name?.name}</Text>
         </View>
         <View style={styles.wrapper}>
           <ScrollView style={styles.liveSoreBoc}>
