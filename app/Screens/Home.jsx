@@ -64,7 +64,7 @@ const Home = () => {
     });
 
     const unsubscribeName = onSnapshot(nameRef, (doc) => {
-      setTeamOneData({
+      setName({
         name: doc.data()?.name || "",
       });
     });
@@ -81,7 +81,7 @@ const Home = () => {
     content = (
       <ScrollView style={styles.homepage}>
         <View style={styles.topSection}>
-          <Text style={styles.titleTop}>{name.name}</Text>
+          <Text style={styles.titleTop}>Sports Name</Text>
         </View>
         <View style={styles.wrapper}>
           <ScrollView style={styles.liveSoreBoc}>
