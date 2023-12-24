@@ -45,7 +45,7 @@ const Team = ({ navigation }) => {
 
 const styles = StyleSheet.create({
   container: {
-    backgroundColor: "#242424",
+    backgroundColor: "#001B79",
     flex: 1,
   },
   topSection: {
@@ -61,6 +61,7 @@ const styles = StyleSheet.create({
     fontSize: 34,
     color: "#FFF",
     fontFamily: "NotoSans_700Bold",
+    fontWeight: "900",
   },
   wrapper: {
     padding: 20,

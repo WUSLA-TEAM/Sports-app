@@ -280,7 +280,7 @@ export default Registration;
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: "#242424",
+    backgroundColor: "#001B79",
   },
   centeredContent: {
     flex: 1,

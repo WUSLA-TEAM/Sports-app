@@ -58,9 +58,12 @@ const Points = () => {
         data={categoriesAData}
         keyExtractor={(item) => item.id}
         renderItem={({ item }) => (
-          <TouchableOpacity onPress={() => handleItemPress(item)}>
+          <TouchableOpacity
+            onPress={() => handleItemPress(item)}
+            style={styles.wrapper}
+          >
             <View style={styles.item}>
-              <Text>{item.id}</Text>
+              <Text style={styles.text}>{item.id}</Text>
             </View>
           </TouchableOpacity>
         )}
@@ -68,12 +71,16 @@ const Points = () => {
 
       <Text style={styles.heading}>Categories B Data</Text>
       <FlatList
+        style={{ marginTop: 10, borderRadius: 10 }}
         data={categoriesBData}
         keyExtractor={(item) => item.id}
         renderItem={({ item }) => (
-          <TouchableOpacity onPress={() => handleItemPress(item)}>
+          <TouchableOpacity
+            onPress={() => handleItemPress(item)}
+            style={styles.wrapper}
+          >
             <View style={styles.item}>
-              <Text>{item.id}</Text>
+              <Text style={styles.text}>{item.id}</Text>
             </View>
           </TouchableOpacity>
         )}
@@ -86,17 +93,29 @@ const styles = StyleSheet.create({
   container: {
     flex: 1,
     padding: 16,
-    backgroundColor: "#242424",
+    backgroundColor: "#150050",
+    paddingTop: 40,
+  },
+  wrapper: {
+    backgroundColor: "#C5FFF8",
   },
   heading: {
     fontSize: 20,
     fontWeight: "bold",
     marginBottom: 8,
+    marginTop: 20,
+    color: "#E0F4FF",
   },
   item: {
     padding: 16,
-    borderBottomWidth: 1,
-    borderBottomColor: "#CCCCCC",
+    borderBottomWidth: 0.5,
+    borderBottomColor: "#150050",
+    marginBottom: 10,
+  },
+  text: {
+    color: "#001B79",
+    fontSize: 18,
+    fontWeight: "500",
   },
 });
 

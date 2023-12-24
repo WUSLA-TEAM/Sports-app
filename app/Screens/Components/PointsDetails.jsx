@@ -6,13 +6,13 @@ const PointsDetails = ({ route }) => {
 
   return (
     <View style={styles.container}>
-      <Text style={styles.heading}>Ordered Points</Text>
+      <Text style={styles.heading}>Participents Number</Text>
       <FlatList
         data={points}
         keyExtractor={(item) => item.toString()}
         renderItem={({ item }) => (
           <View style={styles.item}>
-            <Text>{item}</Text>
+            <Text style={styles.text}>{item}</Text>
           </View>
         )}
       />
@@ -23,18 +23,26 @@ const PointsDetails = ({ route }) => {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    padding: 16,
-    backgroundColor: "#F5FCFF",
+    padding: 20,
+    marginTop: 40,
+    backgroundColor: "#001B79",
   },
   heading: {
     fontSize: 20,
     fontWeight: "bold",
     marginBottom: 8,
+    color: "#EEF5FF",
   },
   item: {
     padding: 16,
     borderBottomWidth: 1,
-    borderBottomColor: "#CCCCCC",
+    borderBottomColor: "#5FBDFF",
+    color: "#EEF5FF",
+  },
+  text: {
+    color: "#EEF5FF",
+    fontSize: 18,
+    fontWeight: "500",
   },
 });
 
