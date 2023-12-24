@@ -34,11 +34,13 @@ const Home = () => {
   const [teamOneData, setTeamOneData] = useState({ name: "", score: 0 });
   const [teamTwoData, setTeamTwoData] = useState({ name: "", score: 0 });
   const [teamThreeData, setTeamThreeData] = useState({ name: "", score: 0 });
+  const [name, setName] = useState();
 
   useEffect(() => {
     const teamOneRef = doc(db, "scores", "teamOne");
     const teamTwoRef = doc(db, "scores", "teamTwo");
     const teamThreeRef = doc(db, "scores", "teamThree");
+    const nameRef = doc(db, "main", "name");
 
     const unsubscribeOne = onSnapshot(teamOneRef, (doc) => {
       setTeamOneData({
@@ -61,10 +63,17 @@ const Home = () => {
       });
     });
 
+    const unsubscribeName = onSnapshot(nameRef, (doc) => {
+      setTeamOneData({
+        name: doc.data()?.name || "",
+      });
+    });
+
     return () => {
       unsubscribeOne();
       unsubscribeTwo();
       unsubscribeThree();
+      unsubscribeName();
     };
   }, []);
 
@@ -72,7 +81,7 @@ const Home = () => {
     content = (
       <ScrollView style={styles.homepage}>
         <View style={styles.topSection}>
-          <Text style={styles.titleTop}>Sports Name</Text>
+          <Text style={styles.titleTop}>{name.name}</Text>
         </View>
         <View style={styles.wrapper}>
           <ScrollView style={styles.liveSoreBoc}>
@@ -157,7 +166,7 @@ const styles = StyleSheet.create({
     alignItems: "center",
   },
   titleTop: {
-    fontSize: 34,
+    fontSize: 25,
     color: "#FFF",
     fontFamily: "NotoSans_700Bold",
   },
