@@ -144,7 +144,7 @@ export default Home;
 
 const styles = StyleSheet.create({
   homepage: {
-    backgroundColor: "#242424",
+    backgroundColor: "#001B79",
     flex: 1,
   },
   topSection: {

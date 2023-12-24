@@ -32,16 +32,14 @@ const StudentDetails = ({ route }) => {
           <View style={styles.content}>
             {studentData && (
               <View style={styles.textContainer}>
-                <Text style={styles.text}>{`ID: ${studentId}`}</Text>
-                <Text
-                  style={styles.text}
-                >{`Number: ${studentData.number}`}</Text>
+                <View style={styles.topText}>
+                  <Text style={styles.text}>{`${studentId}`}</Text>
+                  <Text style={styles.text}>{`${studentData.number}`}</Text>
+                </View>
                 <Text style={styles.text}>{`Programs:`}</Text>
                 {studentData.programs.map((program, index) => (
                   <Text key={index} style={styles.text}>
-                    {typeof program === "object"
-                      ? JSON.stringify(program)
-                      : program}
+                    {typeof program === "object" ? program.id : program}
                   </Text>
                 ))}
               </View>
@@ -56,7 +54,7 @@ const StudentDetails = ({ route }) => {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: "#242424",
+    backgroundColor: "#001B79",
   },
   wrapper: {
     padding: 20,
@@ -64,18 +62,25 @@ const styles = StyleSheet.create({
   content: {},
   textContainer: {},
   text: {
-    color: "#FFF",
+    color: "#EEF5FF",
     fontSize: 24,
     fontWeight: "500",
     paddingBottom: 10,
-    borderBottomWidth: 0.4,
-    borderBottomColor: "#fff",
+    borderBottomWidth: 1,
+    borderBottomColor: "#5FBDFF",
     paddingTop: 10,
     paddingLeft: 10,
     display: "flex",
     alignItems: "center",
     justifyContent: "space-between",
     flexDirection: "row",
+  },
+  topText: {
+    display: "flex",
+    flexDirection: "row",
+    justifyContent: "space-between",
+    alignItems: "center",
+    marginTop: 20,
   },
 });
 

@@ -1,4 +1,4 @@
-import { collection, getDocs } from "firebase/firestore";
+import { collection, getDocs, query, orderBy } from "firebase/firestore";
 import { useEffect, useState } from "react";
 import { db } from "../../firebase"; // Replace with your actual import path
 import { View, Text, ScrollView, StyleSheet } from "react-native";
@@ -15,7 +15,8 @@ const Schedule = () => {
           "schedule",
           "programmes"
         );
-        const scheduleSnapshot = await getDocs(scheduleRef);
+        const scheduleQuery = query(scheduleRef, orderBy("number")); // Order by number
+        const scheduleSnapshot = await getDocs(scheduleQuery);
         const scheduleArray = scheduleSnapshot.docs.map((doc) => doc.data());
         setScheduleData(scheduleArray);
       } catch (error) {
@@ -32,6 +33,7 @@ const Schedule = () => {
       {scheduleData.map((item, index) => (
         <View key={index} style={styles.item}>
           <Text style={styles.text}>{item.name}</Text>
+          {/* <Text style={styles.textMiddle}>{item.number}</Text> */}
           <Text style={styles.text}>{item.time}</Text>
         </View>
       ))}
@@ -44,30 +46,34 @@ const styles = StyleSheet.create({
     flex: 1,
     padding: 20,
     paddingTop: 40,
-    backgroundColor: "#150050",
+    paddingBottom: 40,
+    backgroundColor: "#001B79",
   },
   scheduleTitle: {
-    fontSize: 24,
+    fontSize: 20,
     fontWeight: "bold",
     marginBottom: 10,
-    color: "#FFF",
+    color: "#EEF5FF",
   },
   item: {
-    marginBottom: 16,
+    marginBottom: 20,
     paddingBottom: 10,
-    borderBottomWidth: 0.4,
-    borderBottomColor: "#fff",
+    borderBottomWidth: 1,
+    borderBottomColor: "#5FBDFF",
     paddingTop: 10,
-    paddingLeft: 10,
+    paddingLeft: 5,
     display: "flex",
     alignItems: "center",
     justifyContent: "space-between",
     flexDirection: "row",
   },
   text: {
-    color: "#FFF",
-    fontSize: 24,
+    color: "#EEF5FF",
+    fontSize: 20,
     fontWeight: "500",
+  },
+  textMiddle: {
+    color: "#001B79",
   },
 });
 
